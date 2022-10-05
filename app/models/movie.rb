@@ -3,11 +3,12 @@ class Movie < ActiveRecord::Base
     return ['G','PG','PG-13','R']
   end
 
-  def self.with_ratings(ratings, sort_by)
-    if ratings.nil?
+  #self.with_ratings method is based off office hours discussion and conceptual level discussions with classmates
+  def self.with_ratings(ratings_list, sort_by)
+    if ratings_list.nil?
       all.order sort_by
     else
-      where(rating: ratings.map(&:upcase)).order sort_by
+      where(rating: ratings_list.map(&:upcase)).order sort_by
     end
   end
 end
