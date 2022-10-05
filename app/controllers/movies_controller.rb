@@ -8,9 +8,12 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
-    ratings_list = params[:ratings]&.keys
-    sort_by = params[:sort_by]
     @movies = Movie.with_ratings(ratings_list, sort_by)
+
+    @sort_by = sort_by
+    session[:ratings] = ratings_list
+    session[:sort_by] = @sort_by
+
     @ratings_to_show = ratings_hash
   end
 
@@ -46,16 +49,35 @@ class MoviesController < ApplicationController
   # Making "internal" methods private is not required, but is a common practice.
   # This helps make clear which methods respond to requests, and which ones do not.
   def movie_params
-    params.require(:movie).permit(:title, :rating, :description, :release_date)
+    params.require(:movie).permit(:title, :rating, :description, :release_date, :ratings, :sort_by)
+  end
+
+
+
+  #The idea of using private methods and || statements to enable session tracking came from office hours!
+  
+  def ratings_list
+    params[:ratings]&.keys || session[:ratings]
+  end
+  
+  def sort_by
+    params[:sort_by] || session[:sort_by]
   end
 
   def ratings_hash
-    begin
-      to_show = Hash[ratings_list.collect { |item| [item, "1"] }]
-    rescue
-      ['G','PG','PG-13','R']
-    else
-      return to_show
-    end 
+    Hash[ratings_list.collect { |mov| [mov, "1"] }]
   end
+
+
+
+  #the implementation for an empty_redirect method is from SaaSbook forum
+  #this made it easier to handle empty ratings parameters, in a way sort of similar to python
+  def empty_redirect
+    if !params.key?(:ratings)
+      flash.keep
+      url = movies_path(sort_by: sort_by, ratings: ratings_hash)
+      redirect_to url
+    end
+  end
+
 end
