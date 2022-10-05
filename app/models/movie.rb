@@ -8,7 +8,7 @@ class Movie < ActiveRecord::Base
     if ratings_list.nil?
       all.order sort_by
     else
-      where(rating: ratings_list.map(&:upcase)).order sort_by
+      where(rating: ratings_list).order sort_by
     end
   end
 end
